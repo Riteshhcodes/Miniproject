@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wilds — Nature & Wildlife Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0d1a0e;
+    --bg2: #111f12;
+    --green: #4caf50;
+    --lime: #a8e063;
+    --gold: #d4a843;
+    --cream: #f0ead6;
+    --muted: #7a9e7a;
+    --card-bg: #152015;
+    --border: #2a3d2a;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 60%, #1a3d1a 0%, #0d1a0e 70%);
+    z-index: 0;
+  }
+
+  /* Floating leaves */
+  .leaf {
+    position: absolute;
+    font-size: 2rem;
+    opacity: 0.12;
+    animation: floatLeaf linear infinite;
+    z-index: 1;
+    user-select: none;
+  }
+  @keyframes floatLeaf {
+    0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.15; }
+    90%  { opacity: 0.15; }
+    100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+  }
+
+  .hero-content { position: relative; z-index: 2; }
+
+  .hero-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--lime);
+    margin-bottom: 1.2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.3s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(4rem, 12vw, 9rem);
+    font-weight: 700;
+    line-height: 0.9;
+    color: var(--cream);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.5s forwards;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--lime);
+  }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    font-weight: 300;
+    color: var(--muted);
+    max-width: 420px;
+    line-height: 1.7;
+    margin: 0 auto 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.7s forwards;
+  }
+
+  .hero-cta {
+    display: inline-block;
+    background: var(--lime);
+    color: #0d1a0e;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.85rem 2.2rem;
+    border-radius: 100px;
+    text-decoration: none;
+    transition: background 0.3s, transform 0.2s;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.9s forwards;
+  }
+  .hero-cta:hover { background: #c8f07a; transform: translateY(-2px); }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeUp 1s 1.4s forwards;
+  }
+  .scroll-line {
+    width: 1px;
+    height: 48px;
+    background: linear-gradient(to bottom, var(--muted), transparent);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    background: var(--card-bg);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    overflow-x: auto;
+  }
+  .stat {
+    padding: 1.4rem 3rem;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .stat:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--lime);
+  }
+  .stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+
+  /* ── SECTION ── */
+  section {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 5rem 1.5rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .section-tag {
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--lime);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1.1;
+  }
+
+  /* ── FILTER TABS ── */
+  .filters {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+  }
+  .filter-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    padding: 0.5rem 1.2rem;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .filter-btn:hover,
+  .filter-btn.active {
+    background: var(--lime);
+    border-color: var(--lime);
+    color: #0d1a0e;
+  }
+
+  /* ── ANIMAL GRID ── */
+  .animal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .animal-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+    display: none;
+  }
+  .animal-card.visible { display: block; }
+  .animal-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border-color: var(--muted);
+  }
+
+  .card-emoji-zone {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-badge {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.28rem 0.75rem;
+    border-radius: 100px;
+  }
+  .badge-endangered { background: #4a1010; color: #ff7070; }
+  .badge-vulnerable { background: #3d2a00; color: #ffa940; }
+  .badge-safe       { background: #0d2e10; color: var(--lime); }
+  .badge-threatened { background: #2a1a3d; color: #b07aff; }
+
+  .card-body { padding: 1.4rem; }
+
+  .card-category {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+
+  .card-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 0.2rem;
+  }
+
+  .card-latin {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 0.9rem;
+  }
+
+  .card-desc {
+    font-size: 0.85rem;
+    font-weight: 300;
+    color: #8faa8f;
+    line-height: 1.7;
+    margin-bottom: 1.2rem;
+  }
+
+  .card-stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .cs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .cs-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .cs-value {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--lime);
+  }
+
+  /* ── NATURE FACTS TICKER ── */
+  .ticker-wrap {
+    background: var(--lime);
+    color: #0d1a0e;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 0.75rem 0;
+  }
+  .ticker-inner {
+    display: inline-block;
+    animation: tickerScroll 40s linear infinite;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  @keyframes tickerScroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── BIOME SECTION ── */
+  .biome-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .biome-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.8rem 1.2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .biome-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+    border-radius: 12px;
+  }
+  .biome-card:hover::before { opacity: 1; }
+  .biome-card:hover { border-color: transparent; transform: scale(1.03); }
+
+  .bc-rainforest { background: #0d1f10; }
+  .bc-rainforest::before { background: linear-gradient(135deg, #1a4d20, #0d3315); }
+  .bc-ocean      { background: #0d1420; }
+  .bc-ocean::before { background: linear-gradient(135deg, #0d2a4a, #0a1830); }
+  .bc-desert     { background: #1f1608; }
+  .bc-desert::before { background: linear-gradient(135deg, #4a2e00, #2a1800); }
+  .bc-arctic     { background: #0e1520; }
+  .bc-arctic::before { background: linear-gradient(135deg, #1a2a40, #0d1826); }
+  .bc-savanna    { background: #1a1508; }
+  .bc-savanna::before { background: linear-gradient(135deg, #3d2e00, #221900); }
+  .bc-mountain   { background: #121520; }
+  .bc-mountain::before { background: linear-gradient(135deg, #1a1f3d, #0e1225); }
+
+  .biome-icon { font-size: 2.5rem; margin-bottom: 0.8rem; position: relative; z-index: 1; }
+  .biome-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 0.3rem;
+    position: relative; z-index: 1;
+  }
+  .biome-count {
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    position: relative; z-index: 1;
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalIn 0.3s ease;
+  }
+  @keyframes modalIn {
+    from { opacity:0; transform: scale(0.92) translateY(20px); }
+    to   { opacity:1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-hero {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 7rem;
+    background: linear-gradient(135deg, #152015, #0d1a0e);
+    border-radius: 20px 20px 0 0;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 1rem; right: 1rem;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: var(--cream);
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.2); }
+
+  .modal-body { padding: 2rem; }
+  .modal-category {
+    font-size: 0.65rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--lime); margin-bottom: 0.3rem;
+  }
+  .modal-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem; font-weight: 700; color: var(--cream);
+    line-height: 1.1; margin-bottom: 0.3rem;
+  }
+  .modal-latin {
+    font-family: 'Playfair Display', serif;
+    font-style: italic; font-size: 0.9rem; color: var(--muted); margin-bottom: 1.2rem;
+  }
+  .modal-desc {
+    font-size: 0.9rem; font-weight: 300; color: #8faa8f;
+    line-height: 1.8; margin-bottom: 1.5rem;
+  }
+  .modal-fact {
+    background: #0d1a0e;
+    border-left: 3px solid var(--lime);
+    padding: 1rem 1.2rem;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.85rem; color: var(--cream); line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+  .modal-fact strong { color: var(--lime); }
+
+  .modal-stats-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .mstat {
+    background: #0d1a0e; border-radius: 10px;
+    padding: 1rem; text-align: center;
+  }
+  .mstat-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; font-weight: 700; color: var(--lime);
+  }
+  .mstat-key {
+    font-size: 0.6rem; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--muted); margin-top: 0.25rem;
+  }
+
+  .modal-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .mtag {
+    background: #1a2e1a;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.72rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 100px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--card-bg);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+  }
+  .footer-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-style: italic;
+    color: var(--lime);
+    margin-bottom: 0.5rem;
+  }
+  footer p {
+    font-size: 0.78rem; color: var(--muted); line-height: 1.7;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- FLOATING LEAVES -->
+<div class="hero" id="top">
+  <div class="hero-bg"></div>
+
+  <!-- Leaves injected by JS -->
+
+  <div class="hero-content">
+    <p class="hero-eyebrow">🌿 Explore Planet Earth</p>
+    <h1 class="hero-title">Wild<em>s</em></h1>
+    <p class="hero-sub">Journey through the most extraordinary creatures and ecosystems our planet has ever known.</p>
+    <a href="#animals" class="hero-cta">Begin Exploring</a>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num">8.7M</div><div class="stat-label">Known Species</div></div>
+  <div class="stat"><div class="stat-num">40K+</div><div class="stat-label">Threatened Species</div></div>
+  <div class="stat"><div class="stat-num">~71%</div><div class="stat-label">Earth is Ocean</div></div>
+  <div class="stat"><div class="stat-num">3T</div><div class="stat-label">Trees on Earth</div></div>
+  <div class="stat"><div class="stat-num">150/day</div><div class="stat-label">Species Lost</div></div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-inner" id="ticker"></div>
+</div>
+
+<!-- ANIMALS SECTION -->
+<section id="animals">
+  <div class="section-header">
+    <div>
+      <p class="section-tag">Wildlife</p>
+      <h2 class="section-title">Animal Profiles</h2>
+    </div>
+  </div>
+
+  <div class="filters" id="filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="mammal">Mammals</button>
+    <button class="filter-btn" data-filter="bird">Birds</button>
+    <button class="filter-btn" data-filter="reptile">Reptiles</button>
+    <button class="filter-btn" data-filter="marine">Marine</button>
+    <button class="filter-btn" data-filter="insect">Insects</button>
+  </div>
+
+  <div class="animal-grid" id="animalGrid"></div>
+</section>
+
+<!-- BIOMES SECTION -->
+<section>
+  <div class="section-header">
+    <div>
+      <p class="section-tag">Ecosystems</p>
+      <h2 class="section-title">Earth's Biomes</h2>
+    </div>
+  </div>
+  <div class="biome-grid">
+    <div class="biome-card bc-rainforest"><div class="biome-icon">🌴</div><div class="biome-name">Rainforest</div><div class="biome-count">50% of all species</div></div>
+    <div class="biome-card bc-ocean"><div class="biome-icon">🌊</div><div class="biome-name">Ocean</div><div class="biome-count">240,000+ known species</div></div>
+    <div class="biome-card bc-desert"><div class="biome-icon">🏜️</div><div class="biome-name">Desert</div><div class="biome-count">20% of land area</div></div>
+    <div class="biome-card bc-arctic"><div class="biome-icon">🧊</div><div class="biome-name">Arctic / Tundra</div><div class="biome-count">1,700+ plant species</div></div>
+    <div class="biome-card bc-savanna"><div class="biome-icon">🌾</div><div class="biome-name">Savanna</div><div class="biome-count">5M+ large mammals</div></div>
+    <div class="biome-card bc-mountain"><div class="biome-icon">⛰️</div><div class="biome-name">Mountain</div><div class="biome-count">25% of land surface</div></div>
+  </div>
+</section>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal"></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Wilds</div>
+  <p>A celebration of Earth's biodiversity · Every species matters<br>
+  🌱 Protect what we love. Learn what we risk losing.</p>
+</footer>
+
+<script>
+// ── DATA ──
+const animals = [
+  {
+    emoji:'🐘', name:'African Elephant', latin:'Loxodonta africana',
+    category:'mammal', status:'vulnerable', bg:'#1a200d',
+    desc:'The largest land animal on Earth, elephants are highly intelligent creatures with complex social structures, deep family bonds, and remarkable memory.',
+    fact:'<strong>Mind-blowing fact:</strong> Elephants can recognize themselves in mirrors — one of only a handful of animals with self-awareness. They mourn their dead and revisit bones of deceased family members.',
+    stats:[{k:'Weight',v:'6,000 kg'},{k:'Lifespan',v:'60–70 yrs'},{k:'Memory',v:'Never forgets'}],
+    tags:['Africa','Savanna','Herbivore','Social','Keystone species']
+  },
+  {
+    emoji:'🐋', name:'Blue Whale', latin:'Balaenoptera musculus',
+    category:'marine', status:'endangered', bg:'#0d1520',
+    desc:'The largest animal ever known to have existed, the blue whale\'s heart alone is the size of a small car, and its call can be heard 1,000 miles away.',
+    fact:'<strong>Mind-blowing fact:</strong> A blue whale\'s tongue weighs as much as an elephant. Its heart beats just 4–8 times per minute when diving deep.',
+    stats:[{k:'Length',v:'30 m'},{k:'Weight',v:'150 tonnes'},{k:'Lifespan',v:'80–90 yrs'}],
+    tags:['Ocean','Marine mammal','Filter feeder','Endangered']
+  },
+  {
+    emoji:'🦁', name:'African Lion', latin:'Panthera leo',
+    category:'mammal', status:'vulnerable', bg:'#20150d',
+    desc:'The only truly social big cat, lions live in family groups called prides. The females do most of the hunting while males protect the territory.',
+    fact:'<strong>Mind-blowing fact:</strong> A lion\'s roar can be heard up to 8 km away. Lions sleep up to 20 hours a day to conserve energy for the hunt.',
+    stats:[{k:'Speed',v:'80 km/h'},{k:'Roar',v:'8 km range'},{k:'Sleep',v:'20 hrs/day'}],
+    tags:['Africa','Savanna','Apex predator','Pride','Vulnerable']
+  },
+  {
+    emoji:'🦅', name:'Bald Eagle', latin:'Haliaeetus leucocephalus',
+    category:'bird', status:'safe', bg:'#0f1520',
+    desc:'The national bird of the United States, the bald eagle is a powerful raptor capable of spotting prey from up to 3 km away with its exceptional eyesight.',
+    fact:'<strong>Mind-blowing fact:</strong> Eagle eyes have two foveas (humans have one), giving them 4–8× sharper vision than humans. They can see UV light.',
+    stats:[{k:'Wingspan',v:'2.4 m'},{k:'Vision',v:'5× human'},{k:'Dive',v:'120 km/h'}],
+    tags:['North America','Raptor','Apex predator','Symbol','Recovered']
+  },
+  {
+    emoji:'🐊', name:'Saltwater Crocodile', latin:'Crocodylus porosus',
+    category:'reptile', status:'safe', bg:'#0f1a10',
+    desc:'The world\'s largest living reptile and most powerful animal bite — saltwater crocodiles are apex predators that have survived since the dinosaur age.',
+    fact:'<strong>Mind-blowing fact:</strong> Crocodiles have the strongest bite force ever measured at ~16,460 N — yet the muscles to open their jaws are so weak, a rubber band can hold them shut.',
+    stats:[{k:'Length',v:'6–7 m'},{k:'Bite',v:'16,460 N'},{k:'Age',v:'200M yrs old'}],
+    tags:['Asia-Pacific','Reptile','Apex predator','Ancient','Aquatic']
+  },
+  {
+    emoji:'🦋', name:'Monarch Butterfly', latin:'Danaus plexippus',
+    category:'insect', status:'endangered', bg:'#1f1505',
+    desc:'Famous for one of nature\'s most astonishing migrations — monarchs travel up to 4,800 km from Canada to central Mexico each year, navigating by sun and magnetic field.',
+    fact:'<strong>Mind-blowing fact:</strong> Monarchs that make the migration have never done it before, yet they find the same trees their great-grandparents used. Scientists still don\'t fully understand how.',
+    stats:[{k:'Migration',v:'4,800 km'},{k:'Speed',v:'48 km/h'},{k:'Lifespan',v:'8 months'}],
+    tags:['Americas','Migration','Pollinator','Endangered','Metamorphosis']
+  },
+  {
+    emoji:'🦜', name:'Scarlet Macaw', latin:'Ara macao',
+    category:'bird', status:'safe', bg:'#1f0d0d',
+    desc:'One of the most intelligent and colourful birds on Earth. Scarlet macaws mate for life, use tools, and can mimic complex human speech patterns.',
+    fact:'<strong>Mind-blowing fact:</strong> Macaws eat clay from riverbanks — not for nutrition, but to neutralize toxins in the seeds and fruits they eat. Natural detox!',
+    stats:[{k:'Wingspan',v:'1 m'},{k:'Lifespan',v:'75 yrs'},{k:'IQ',v:'~5-yr-old child'}],
+    tags:['Amazon','Rainforest','Monogamous','Tool user','Tropical']
+  },
+  {
+    emoji:'🐙', name:'Giant Pacific Octopus', latin:'Enteroctopus dofleini',
+    category:'marine', status:'safe', bg:'#0d1020',
+    desc:'Masters of intelligence, camouflage, and escape artistry. Octopuses have three hearts, blue blood, and can open jars, solve mazes, and recognize individual humans.',
+    fact:'<strong>Mind-blowing fact:</strong> Octopus arms have their own mini-brains — ⅔ of their neurons are in their arms, meaning each arm can act independently from the central brain.',
+    stats:[{k:'Arms',v:'8 (+ 2 hearts)'},{k:'Lifespan',v:'3–5 yrs'},{k:'IQ equiv',v:'Very high'}],
+    tags:['Pacific Ocean','Cephalopod','Camouflage','Intelligent','Solitary']
+  },
+  {
+    emoji:'🐆', name:'Snow Leopard', latin:'Panthera uncia',
+    category:'mammal', status:'vulnerable', bg:'#101520',
+    desc:'The ghost of the mountains — snow leopards are so elusive, they\'re almost never seen in the wild. Their long, thick tails act as scarves in cold mountain air.',
+    fact:'<strong>Mind-blowing fact:</strong> Unlike other big cats, snow leopards cannot roar. Instead, they communicate through chuffing, growling, and a unique sound called "prusten" — a soft puffing through the nose.',
+    stats:[{k:'Altitude',v:'up to 5,500m'},{k:'Tail',v:'~90cm long'},{k:'Territory',v:'1,000 km²'}],
+    tags:['Himalayas','Mountain','Solitary','Elusive','Vulnerable']
+  },
+  {
+    emoji:'🌵', name:'Saguaro Cactus', latin:'Carnegiea gigantea',
+    category:'reptile', status:'safe', bg:'#1f1505',
+    desc:'The iconic giant cactus of the Sonoran Desert, a saguaro can live 150–200 years, grow 15 metres tall, and store hundreds of gallons of water inside its pleated trunk.',
+    fact:'<strong>Mind-blowing fact:</strong> A saguaro doesn\'t grow its first arm until it\'s 75–100 years old. The holes made by woodpeckers become "condos" for dozens of other species after the bird leaves.',
+    stats:[{k:'Height',v:'15 metres'},{k:'Lifespan',v:'200 years'},{k:'Water',v:'750 litres'}],
+    tags:['Desert','Sonoran','Keystone plant','Old growth','Arizona']
+  },
+  {
+    emoji:'🦈', name:'Great White Shark', latin:'Carcharodon carcharias',
+    category:'marine', status:'vulnerable', bg:'#0a0f1a',
+    desc:'The ocean\'s most iconic apex predator, great whites can detect a single drop of blood in 100 litres of water and sense electrical fields from prey hidden in sand.',
+    fact:'<strong>Mind-blowing fact:</strong> Great whites can detect electrical fields as faint as 0.005 microvolts — the equivalent of a 1.5V battery from 1,600 km away.',
+    stats:[{k:'Speed',v:'56 km/h'},{k:'Teeth',v:'300 (rows)'},  {k:'Sense',v:'0.005 µV'}],
+    tags:['Ocean','Apex predator','Cartilaginous fish','Misunderstood','Vital']
+  },
+  {
+    emoji:'🦚', name:'Indian Peafowl', latin:'Pavo cristatus',
+    category:'bird', status:'safe', bg:'#0d1020',
+    desc:'The national bird of India, the peacock\'s iridescent tail feathers are not actually coloured — they contain no pigment. The colours come from microscopic crystal-like structures.',
+    fact:'<strong>Mind-blowing fact:</strong> The "eyes" on a peacock\'s tail create infrasound (below 20 Hz) when shaken — inaudible to humans but felt by peahens as a vibration in their crests.',
+    stats:[{k:'Tail',v:'1.5 m feathers'},{k:'Lifespan',v:'20 yrs'},{k:'Display',v:'Infrasound'}],
+    tags:['South Asia','India','Display','Iridescent','National bird']
+  },
+];
+
+const statusMap = {
+  endangered: ['badge-endangered','Endangered'],
+  vulnerable:  ['badge-vulnerable','Vulnerable'],
+  safe:        ['badge-safe','Least Concern'],
+  threatened:  ['badge-threatened','Threatened']
+};
+
+// ── RENDER CARDS ──
+function renderCards(filter='all') {
+  const grid = document.getElementById('animalGrid');
+  grid.innerHTML = '';
+  animals.forEach((a, i) => {
+    const [badgeClass, badgeText] = statusMap[a.status];
+    const div = document.createElement('div');
+    div.className = `animal-card${filter==='all'||a.category===filter?' visible':''}`;
+    div.style.animationDelay = `${i*0.07}s`;
+    div.innerHTML = `
+      <div class="card-emoji-zone" style="background:linear-gradient(135deg,${a.bg},#0d1a0e)">
+        ${a.emoji}
+        <span class="card-badge ${badgeClass}">${badgeText}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-category">${a.category}</div>
+        <div class="card-name">${a.name}</div>
+        <div class="card-latin">${a.latin}</div>
+        <div class="card-desc">${a.desc.substring(0,120)}…</div>
+        <div class="card-stats">
+          ${a.stats.map(s=>`<div class="cs"><div class="cs-label">${s.k}</div><div class="cs-value">${s.v}</div></div>`).join('')}
+        </div>
+      </div>`;
+    div.onclick = () => openModal(i);
+    grid.appendChild(div);
+  });
+}
+
+// ── FILTER ──
+document.getElementById('filters').addEventListener('click', e=>{
+  if(!e.target.classList.contains('filter-btn')) return;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  renderCards(e.target.dataset.filter);
+});
+
+// ── MODAL ──
+function openModal(i) {
+  const a = animals[i];
+  const [badgeClass, badgeText] = statusMap[a.status];
+  const modal = document.getElementById('modal');
+  modal.innerHTML = `
+    <div class="modal-hero" style="background:linear-gradient(135deg,${a.bg},#0d1a0e)">
+      ${a.emoji}
+      <button class="modal-close" onclick="document.getElementById('modalOverlay').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-category">${a.category} · <span class="card-badge ${badgeClass}" style="display:inline;padding:0.2rem 0.6rem;border-radius:100px;">${badgeText}</span></div>
+      <div class="modal-name">${a.name}</div>
+      <div class="modal-latin">${a.latin}</div>
+      <div class="modal-desc">${a.desc}</div>
+      <div class="modal-fact">${a.fact}</div>
+      <div class="modal-stats-grid">
+        ${a.stats.map(s=>`<div class="mstat"><div class="mstat-val">${s.v}</div><div class="mstat-key">${s.k}</div></div>`).join('')}
+      </div>
+      <div class="modal-tags">
+        ${a.tags.map(t=>`<span class="mtag">${t}</span>`).join('')}
+      </div>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if(e.target === document.getElementById('modalOverlay'))
+    document.getElementById('modalOverlay').classList.remove('open');
+}
+
+// ── TICKER ──
+const facts = [
+  '🌿 A single tree can absorb 22 kg of CO₂ per year',
+  '🐝 Bees have been around for 100 million years',
+  '🌊 The ocean produces over 50% of Earth\'s oxygen',
+  '🐬 Dolphins give each other unique name-whistles',
+  '🌳 The Amazon produces 20% of Earth\'s oxygen',
+  '🦠 There are more microbes in a teaspoon of soil than humans on Earth',
+  '🐘 Elephants are the only animals that cannot jump',
+  '🐠 Clownfish can change their gender',
+  '🌺 There are 400,000+ species of flowering plants',
+  '🦑 The colossal squid has the largest eyes of any animal (30 cm)',
+  '🐦 Crows can recognize individual human faces and hold grudges',
+  '🌙 Some mushrooms glow in the dark via bioluminescence',
+];
+const t = document.getElementById('ticker');
+const doubled = [...facts,...facts].map(f=>`<span style="margin: 0 3rem">${f}</span>`).join('');
+t.innerHTML = doubled;
+
+// ── LEAVES ──
+const hero = document.getElementById('top');
+const leafChars = ['🍃','🌿','🍀','☘️','🌱'];
+for(let i=0;i<18;i++){
+  const l = document.createElement('div');
+  l.className = 'leaf';
+  l.textContent = leafChars[Math.floor(Math.random()*leafChars.length)];
+  l.style.left = Math.random()*100+'%';
+  l.style.fontSize = (1.2+Math.random()*2)+'rem';
+  l.style.animationDuration = (12+Math.random()*20)+'s';
+  l.style.animationDelay = (Math.random()*15)+'s';
+  hero.appendChild(l);
+}
+
+// ── INIT ──
+renderCards();
+</script>
+</body>
+</html>
